@@ -12,6 +12,9 @@ const Update = () => {
 
     const {id} = useParams();
 
+    const [des, setDes] = useState<any[]>([])
+    let r = [];
+
     const stat = [
         { label: 'ACTIVE', value: 'ACTIVE' },
         { label: 'RESIGNED', value: 'RESIGNED' },
@@ -36,6 +39,16 @@ const Update = () => {
         status: ''
     })
 
+    for (let i = 0; i < des.length; i++) {
+        for (let y = 0; y < des[i].designation.length; y++) {
+            let v = {des: '', dep: ''}
+            v.dep = des[i].dept_name
+            v.des = des[i].designation[y].designation_name
+            console.log(v)
+            r.push(v)
+        }
+    }
+
     useEffect(() => {
         axios.get('http://localhost:8081/emp/'+id)
         .then(res => {
@@ -51,7 +64,7 @@ const Update = () => {
                 country: res.data.country,
                 zipcode: res.data.zipcode,
                 designationName: res.data.ass_des[0].designationName,
-                designationDepartment: res.data.ass_des[0].designationDepartment,
+                designationDepartment: res.data.ass_des[0].DepartmentName,
                 emp_type: res.data.ass_des[0].emp_type,
                 status: res.data.ass_des[0].status
             });
@@ -63,7 +76,9 @@ const Update = () => {
         .then(res => {setDeps(res.data)})
         .catch(err => console.log(err))
 
-        
+        axios.get('http://localhost:8081/desPerDep/')
+        .then(res => {setDes(res.data)})
+        .catch()
     }, [])
     
     const upemp = async (e: { preventDefault: () => void; }) => {
@@ -73,6 +88,7 @@ const Update = () => {
         .catch();
 
         nav('/');
+        location.reload();
     }
 
   return (
@@ -152,7 +168,7 @@ const Update = () => {
                             className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-96 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100'
                         >
                             {stat.map((dep, i) => {
-                                if (dep.value == data.status){
+                                if (dep.value == data.status ){
                                     return <option value={dep.value} selected key={i}>{dep.label}</option>
                                 } else {
                                     return <option value={dep.value} key={i}>{dep.label}</option>
@@ -162,25 +178,33 @@ const Update = () => {
                     </div>
                 </div>
                 <div className='py-6 flex justify-between space-x-4'>
-                    <div>
+                    {/* <div>
                         <label className='block mb-3 text-gray-600'>Designation</label>
                         <input type='text' value={data.designationName}
                         onChange={e => {setData({...data, designationName: e.target.value})}}
                         className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-96 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100' />
-                    </div>
+                    </div> */}
                     <div>
                         <label className='block mb-3 text-gray-600'>Department</label>
                         <select
                             id="in"
-                            onChange={e => {data.designationDepartment = e.target.value; console.log(data.designationDepartment);}}
+                            onChange={e => { data.designationDepartment = String(e.target.value.split(',').at(0));  data.designationName = String(e.target.value.split(',').at(1)); console.log(e.target.value[1]);}}
                             className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-96 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100'
                         >
-                            {deps.map((dep, i) => {
+                            {/* {deps.map((dep, i) => {
                                 if (dep.dept_name == data.designationDepartment){
-                                    return <option value={dep.dept_name} selected key={i}>{dep.dept_name}</option>
+                                    return <option value={[dep.dept_name, dep.id]} selected key={i}>{dep.dept_name}</option>
                                 } else {
-                                    return <option value={dep.dept_name} key={i}>{dep.dept_name}</option>
+                                    return <option value={[dep.dept_name, dep.id]} key={i}>{dep.dept_name}</option>
                                 }
+                            })} */}
+
+
+                            {r.map((e, i) => {
+                                if (e.dep == data.designationDepartment && e.des == data.designationName)
+                                return <option value={e.dep +','+e.des} selected key={i}>{e.dep +" "+ e.des}</option>
+                                else
+                                return <option value={e.dep +','+e.des} key={i}>{e.dep +" "+ e.des}</option>
                             })}
                         </select>
                     </div>

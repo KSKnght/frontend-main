@@ -1,19 +1,12 @@
 import React, { useEffect, useState, } from 'react'
 import Cancel_button from '../components/cancel_button'
 import Submit_button from '../components/submit_button'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, } from 'react-router-dom'
 import axios from 'axios'
+import Sele from 'react-select'
 
 const Create = () => {
     const nav = useNavigate();
-
-    const [deps, setDeps] = useState<any[]>([])
-
-    const [init, setInit] = useState({
-        id: 0,
-        dept_name: '',
-        status: '',
-    })
 
     const [data, setData] = useState({
         num: '',
@@ -32,12 +25,26 @@ const Create = () => {
         status: ''
     })
 
-    useEffect(() => {
 
-        axios.get('http://localhost:8081/deps')
-        .then(res => {setDeps(res.data); setInit(res.data[0])})
-        .catch(err => console.log(err))
+    const [des, setDes] = useState<any[]>([])
+    let r = [];
+
+
+    useEffect(() => {
+        axios.get('http://localhost:8081/desPerDep/')
+        .then(res => {setDes(res.data)})
+        .catch()
     }, [])
+
+    for (let i = 0; i < des.length; i++) {
+        for (let y = 0; y < des[i].designation.length; y++) {
+            let v = {des: '', dep: ''}
+            v.dep = des[i].dept_name
+            v.des = des[i].designation[y].designation_name
+            console.log(v)
+            r.push(v)
+        }
+    }
 
     const upemp = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -45,7 +52,8 @@ const Create = () => {
         .then()
         .catch();
 
-        nav('/')
+        nav('/');
+        location.reload();
     }
 
   return (
@@ -116,24 +124,19 @@ const Create = () => {
                         onChange={e => {setData({...data, emp_num: e.target.value})}}
                         className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-72 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100' />
                     </div>
+                    
                     <div>
-                        <label className='block mb-3 text-gray-600'>Designation</label>
-                        <input type='text' 
-                        onChange={e => {setData({...data, designationName: e.target.value})}}
-                        className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-72 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100' />
-                    </div>
-                    <div>
-                        <label className='block mb-3 text-gray-600'>Department</label>
+                        <label className='block mb-3 text-gray-600'>Department Designation</label>
                         <select
                         id="in"
                         defaultValue={'Select'}
-                        onChange={e => {data.designationDepartment = e.target.value; console.log(data.designationDepartment);}}
-                        className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-96 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100'
-                    >   <option value="Select" disabled={true}>Select Department</option>
-                        {deps.map((dep, i) => {
-                                return <option value={dep.dept_name} key={i}>{dep.dept_name}</option>
+                        onChange={e => { data.designationDepartment = String(e.target.value.split(',').at(0));  data.designationName = String(e.target.value.split(',').at(1)); console.log(data); }}
+                        className='border border-gray-500 rounded-md inline-block py-4 px-4 mr-96 w-full text-gray-600 tracking-wider transition-all hover:bg-sky-100'> 
+                        <option value="Select" disabled={true}>Select Department</option>
+                        {r.map((e, i) => {
+                            return <option value={e.dep +','+e.des} key={i}>{e.dep +" "+ e.des}</option>
                         })}
-                    </select>
+                        </select>
                     </div>
                 </div>
             </div>

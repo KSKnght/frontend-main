@@ -38,4 +38,3 @@ const actions = ({ id } : { id : Number}) => {
 }
 
 export default actions
-
